@@ -1,14 +1,24 @@
+import { Modal } from "@/ui/components/modal/Modal";
 import type { todo } from "@/ui/contents/todo";
 import { AddTodo } from "@/ui/contents/todo/AddTodo";
 import { TodoList } from "@/ui/contents/todo/TodoList";
 import { PrismaClient } from "@prisma/client";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { redirect, useLoaderData } from "@remix-run/react";
-import { add, sub } from "date-fns";
+import {
+  Outlet,
+  redirect,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+  useNavigation,
+} from "@remix-run/react";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import { generateUUIDv7 } from "./uuidv7";
 export { meta } from "./meta";
+
+const prisma = new PrismaClient();
 
 export default function Index() {
   const data = useLoaderData<LoadDate>();
@@ -17,16 +27,38 @@ export default function Index() {
     name: todo.name,
     dueDate: new Date(todo.dueDate),
   }));
+  const navigate = useNavigate();
+  const navigation = useNavigation();
+  const [openOutlet, setOpenOutlet] = useState(false);
+  const location = useLocation();
+
+  const fetchComplete = !navigation.location;
+  const onHome = location.pathname === "/home";
 
   return (
     <div className="grid gap-4 p-2 font-sans">
       <h1 className="text-3xl">Todo</h1>
       <div className="rounded bg-white/70 p-2">
-        <TodoList todos={todos} />
+        <TodoList
+          todos={todos}
+          handleSelect={(item: todo) => {
+            navigate(`/home/todo/${item.id}`);
+            setOpenOutlet(true);
+          }}
+        />
       </div>
       <div className="rounded bg-white/70 p-2">
         <AddTodo />
       </div>
+      <Modal
+        isOpen={openOutlet && fetchComplete && !onHome}
+        close={() => {
+          setOpenOutlet(false);
+          navigate("/home");
+        }}
+      >
+        <Outlet />
+      </Modal>
     </div>
   );
 }
@@ -52,44 +84,17 @@ export const loader = async () => {
   return json({ todos });
 };
 
-const inMemoryStore = {
-  todos: [
-    {
-      id: generateUUIDv7(),
-      name: "洗濯",
-      dueDate: sub(new Date(), { days: 2 }),
-    },
-    {
-      id: generateUUIDv7(),
-      name: "食器洗い",
-      dueDate: add(new Date(), { days: 0 }),
-    },
-    {
-      id: generateUUIDv7(),
-      name: "床掃除",
-      dueDate: add(new Date(), { days: 2 }),
-    },
-    {
-      id: generateUUIDv7(),
-      name: "さんぽ",
-      dueDate: add(new Date(), { days: 5 }),
-    },
-  ],
-};
-
-const prisma = new PrismaClient();
-
 export async function action({ request }: ActionFunctionArgs) {
   const body = await request.formData();
   console.log("action: %o", body);
 
   const name = body.get("name");
   if (!name || typeof name !== "string") {
-    return redirect(`/`);
+    return redirect("/");
   }
   const dueDateStr = body.get("dueDate");
   if (!dueDateStr || typeof dueDateStr !== "string") {
-    return redirect(`/`);
+    return redirect("/");
   }
 
   const todo: todo = {
@@ -113,6 +118,5 @@ export async function action({ request }: ActionFunctionArgs) {
       toast.error(`失敗: ${error}`);
     });
 
-  inMemoryStore.todos = [...inMemoryStore.todos, todo];
-  return redirect(`/`);
+  return redirect("/home");
 }

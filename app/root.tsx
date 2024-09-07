@@ -8,6 +8,8 @@ import {
   useRouteError,
 } from "@remix-run/react";
 import "./tailwind.css";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
@@ -22,6 +24,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         {children}
         <ScrollRestoration />
         <Scripts />
+        <ToastContainer
+          position="bottom-right"
+          closeOnClick
+          newestOnTop
+          hideProgressBar
+        />
       </body>
     </html>
   );

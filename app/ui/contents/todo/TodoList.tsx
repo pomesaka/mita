@@ -8,37 +8,46 @@ import type { todo } from ".";
 
 interface TodoListProps {
   todos: todo[];
+  handleSelect: (item: todo) => void;
 }
 
-export const TodoList: React.FC<TodoListProps> = ({ todos }) => {
+export const TodoList: React.FC<TodoListProps> = ({ todos, handleSelect }) => {
   return (
-    <div className="row-auto grid grid-cols-[max-content,max-content,auto,max-content] gap-y-2">
+    <div className="row-auto grid grid-cols-[max-content,max-content,max-content,auto]">
       {todos
         .sort((a, b) => differenceInDays(a.dueDate, b.dueDate))
         .map((todo) => (
-          <Todo key={todo.id} {...todo} />
+          <Todo key={todo.id} {...todo} handleSelect={handleSelect} />
         ))}
     </div>
   );
 };
 
-const Todo: React.FC<todo> = ({ name, dueDate }) => {
+const Todo: React.FC<todo & { handleSelect: (item: todo) => void }> = ({
+  handleSelect,
+  ...todo
+}) => {
+  const { name, dueDate } = todo;
   const today = startOfDay(new Date());
   const remaining = differenceInDays(dueDate, today);
 
   return (
-    <div className="col-span-full grid grid-cols-subgrid gap-2 border-slate-400 border-b">
+    <button
+      type="button"
+      className="col-span-full grid grid-cols-subgrid items-end gap-2 rounded border-slate-400 border-b px-1 pt-2 active:bg-blue-400 active:bg-opacity-30"
+      onClick={() => handleSelect(todo)}
+    >
       <Icon remaining={remaining} />
-      <div className={clsx("text-nowrap rounded lining-nums")}>{name}</div>
+      <div className={clsx("rounded text-start lining-nums")}>{name}</div>
       {[
         { key: "due", body: `~${dueDate.toLocaleDateString()}` },
-        { key: "remaining", body: `(remaining ${remaining} day)` },
+        { key: "remaining", body: `(あと${remaining}日)` },
       ].map(({ key, body }) => (
-        <div key={key} className={clsx("text-nowrap rounded px-1")}>
+        <div key={key} className={clsx("rounded px-1")}>
           {body}
         </div>
       ))}
-    </div>
+    </button>
   );
 };
 
