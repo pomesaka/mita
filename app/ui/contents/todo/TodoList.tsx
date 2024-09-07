@@ -2,8 +2,8 @@ import { clsx } from "clsx";
 import { differenceInDays, startOfDay } from "date-fns";
 import React from "react";
 import { CgDanger } from "react-icons/cg";
-import { CiWarning } from "react-icons/ci";
 import { FaRegCheckCircle } from "react-icons/fa";
+import { PiWarningBold } from "react-icons/pi";
 import type { todo } from ".";
 
 interface TodoListProps {
@@ -29,9 +29,9 @@ const Todo: React.FC<todo> = ({ name, dueDate }) => {
   return (
     <div className="col-span-full grid grid-cols-subgrid gap-2 border-slate-400 border-b">
       <Icon remaining={remaining} />
-      <div className={clsx("text-nowrap rounded px-1")}>{name}</div>
+      <div className={clsx("text-nowrap rounded lining-nums")}>{name}</div>
       {[
-        { key: "due", body: `~ ${dueDate.toLocaleDateString()}` },
+        { key: "due", body: `~${dueDate.toLocaleDateString()}` },
         { key: "remaining", body: `(remaining ${remaining} day)` },
       ].map(({ key, body }) => (
         <div key={key} className={clsx("text-nowrap rounded px-1")}>
@@ -50,7 +50,7 @@ const Icon: React.FC<{ remaining: number }> = ({ remaining }) => {
     return <CgDanger className="size-6 text-red-600" />;
   }
   if (remaining <= 3) {
-    return <CiWarning className="size-6 text-yellow-600" />;
+    return <PiWarningBold className="size-6 text-yellow-600" />;
   }
 
   return <FaRegCheckCircle className="size-6 text-green-600" />;

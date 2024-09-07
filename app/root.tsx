@@ -28,7 +28,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <div className="relative h-screen">
+      <div className="absolute inset-0 bg-center bg-cover bg-mug-img">
+        <div className="absolute inset-0 bg-gray-500 opacity-60"></div>
+      </div>
+      <div className="relative z-10">
+        <Outlet />
+      </div>
+    </div>
+  );
 }
 
 export function ErrorBoundary() {
